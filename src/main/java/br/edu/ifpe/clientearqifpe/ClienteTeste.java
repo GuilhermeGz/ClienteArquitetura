@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package br.edu.ifpe.clientearqifpe;
 
 import java.io.IOException;
@@ -13,7 +8,7 @@ import java.util.Scanner;
 
 /**
  *
- * @author gon
+ * @author Guilherme
  */
 public class ClienteTeste {
 
@@ -23,15 +18,42 @@ public class ClienteTeste {
         Socket cliente = new Socket("127.0.0.1", 32154);
         System.out.println("O cliente se conectou ao servidor!");
 
-        Scanner teclado = new Scanner(System.in);
-        PrintStream saida = new PrintStream(cliente.getOutputStream());
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Scanner teclado = new Scanner(cliente.getInputStream());
+                    while (teclado.hasNextLine()) {
+                        System.out.println(teclado.nextLine());
+                    }
 
-        while (teclado.hasNextLine()) {
-            saida.println(teclado.nextLine());
-        }
+                    teclado.close();
+                } catch (Exception e) {
 
-        saida.close();
-        teclado.close();
-        cliente.close();
+                }
+            }
+
+        });
+        t1.start();
+
+        Thread t2 = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    PrintStream saida = new PrintStream(cliente.getOutputStream());
+                    Scanner teclado = new Scanner(System.in);
+
+                    while (teclado.hasNextLine()) {
+                        saida.println(teclado.nextLine());
+                    }
+
+                    saida.close();
+                    teclado.close();
+                } catch (Exception e) {
+
+                }
+            }
+        });
+        t2.start();
+
     }
 }
