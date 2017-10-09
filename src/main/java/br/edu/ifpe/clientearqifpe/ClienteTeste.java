@@ -12,48 +12,33 @@ import java.util.Scanner;
  */
 public class ClienteTeste {
 
+    private String host;
+    private int porta;
+
+    ClienteTeste(String host, int porta) {
+        this.host = host;
+        this.porta = porta;
+
+    }
+
     public static void main(String[] args)
             throws IOException, UnknownHostException {
 
         Socket cliente = new Socket("127.0.0.1", 32154);
         System.out.println("O cliente se conectou ao servidor!");
 
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Scanner teclado = new Scanner(cliente.getInputStream());
-                    while (teclado.hasNextLine()) {
-                        System.out.println(teclado.nextLine());
-                    }
+        Receptor r = new Receptor(cliente.getInputStream());
+        new Thread(r).start();
 
-                    teclado.close();
-                } catch (Exception e) {
+        Scanner teclado = new Scanner(System.in);
+        PrintStream saida = new PrintStream(cliente.getOutputStream());
+        while (teclado.hasNextLine()) {
+            saida.println(teclado.nextLine());
+        }
 
-                }
-            }
-
-        });
-        t1.start();
-
-        Thread t2 = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    PrintStream saida = new PrintStream(cliente.getOutputStream());
-                    Scanner teclado = new Scanner(System.in);
-
-                    while (teclado.hasNextLine()) {
-                        saida.println(teclado.nextLine());
-                    }
-
-                    saida.close();
-                    teclado.close();
-                } catch (Exception e) {
-
-                }
-            }
-        });
-        t2.start();
-
+        saida.close();
+        teclado.close();
+        cliente.close();
     }
+
 }
